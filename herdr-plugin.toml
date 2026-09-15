@@ -10,11 +10,6 @@ id = "toggle"
 title = "Tab notes: toggle the notes pane for this tab"
 command = ["bash", "toggle.sh"]
 
-[[actions]]
-id = "debug"
-title = "Tab notes: dump action environment to the state dir"
-command = ["bash", "debug.sh"]
-
 [[panes]]
 id = "notes"
 title = "Tab notes"
