@@ -21,6 +21,20 @@ autocmd BufRead,BufNewFile *.md setlocal filetype=markdown conceallevel=0
 " Save on every change and when the pane loses focus; nothing is ever lost.
 autocmd TextChanged,TextChangedI,InsertLeave,FocusLost * silent! update
 
+" The pane is narrow and lines wrap, so move by screen line, not by file line.
+nnoremap j gj
+nnoremap k gk
+vnoremap j gj
+vnoremap k gk
+nnoremap <Down> gj
+nnoremap <Up> gk
+vnoremap <Down> gj
+vnoremap <Up> gk
+inoremap <Down> <C-o>gj
+inoremap <Up> <C-o>gk
+nnoremap 0 g0
+nnoremap $ g$
+
 " Open at the end of the note.
 autocmd BufReadPost * silent! normal! G
 
