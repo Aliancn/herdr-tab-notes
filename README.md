@@ -70,6 +70,22 @@ NOTES_COLS=48                      # width of the notes pane in columns (default
 NOTES_EDITOR="nvim"                # use your own editor command instead of the bundled config
 ```
 
+## Remote machines
+
+Herdr runs plugin actions on the server of the machine you are viewing, and it does not
+copy plugins to SSH hosts. So `prefix+f` on a tab that lives on a saved SSH machine
+needs the plugin on that machine as well. On each remote:
+
+```bash
+herdr plugin install yang3kc/herdr-tab-notes --yes   # --yes: the prompt needs a TTY otherwise
+# add the same [[keys.command]] block to that machine's ~/.config/herdr/config.toml
+herdr server reload-config
+```
+
+`nvim` and `jq` must be on the remote's `PATH` too. Each machine keeps its own notes in its
+own state directory; nothing is synced between machines. After a plugin update, run the
+install command again on each remote.
+
 ## How it works
 
 - `toggle.sh` is a plugin action. Herdr passes the focused workspace, tab, and pane in
