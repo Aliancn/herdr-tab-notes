@@ -24,11 +24,12 @@ herdr plugin install yang3kc/herdr-tab-notes
 herdr plugin link /path/to/herdr-tab-notes
 ```
 
-Bind a key in `~/.config/herdr/config.toml` and reload:
+Bind a key in `~/.config/herdr/config.toml` and reload. `prefix+n` is Herdr's default
+for "next tab", so pick a free one; `prefix+f` is free in the default layout:
 
 ```toml
 [[keys.command]]
-key = "prefix+n"
+key = "prefix+f"
 type = "plugin_action"
 command = "tabnotes.toggle"
 description = "toggle tab notes"
@@ -42,8 +43,8 @@ Requires `nvim` and `jq` on `PATH` (both are on Homebrew: `brew install neovim j
 
 ## Use
 
-- `prefix+n` opens the note for the focused tab in a 40-column split on the right and
-  focuses it. `prefix+n` again closes it. The action is also in Herdr's plugin action
+- `prefix+f` opens the note for the focused tab in a 40-column split on the right and
+  focuses it. `prefix+f` again closes it. The action is also in Herdr's plugin action
   list as "Tab notes: toggle the notes pane for this tab".
 - The editor is Neovim with its own small config (`init.vim`, loaded with `--clean`,
   so your personal Neovim setup is not touched). Every change is saved immediately.
