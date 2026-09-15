@@ -1,0 +1,22 @@
+id = "tabnotes"
+name = "Tab notes"
+version = "0.1.0"
+min_herdr_version = "0.9.0"
+description = "One plain Markdown scratchpad per tab, toggled into a narrow right split. No build step, no daemon."
+platforms = ["macos", "linux"]
+
+[[actions]]
+id = "toggle"
+title = "Tab notes: toggle the notes pane for this tab"
+command = ["bash", "toggle.sh"]
+
+[[actions]]
+id = "debug"
+title = "Tab notes: dump action environment to the state dir"
+command = ["bash", "debug.sh"]
+
+[[panes]]
+id = "notes"
+title = "Tab notes"
+placement = "split"
+command = ["bash", "pane.sh"]
