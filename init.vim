@@ -43,6 +43,27 @@ nnoremap <silent> q :update<CR>:qa<CR>
 nnoremap <silent> <C-s> :update<CR>
 inoremap <silent> <C-s> <Esc>:update<CR>a
 
+" Every yank also goes to the system clipboard. The text is sent through the
+" terminal (OSC 52) and Herdr forwards it to the machine you sit at, so a yank on
+" a saved SSH machine reaches the local clipboard too. Deletes stay in Neovim's
+" registers, and p pastes from those registers as usual.
+lua << EOF
+local copy = require('vim.ui.clipboard.osc52').copy('+')
+vim.api.nvim_create_autocmd('TextYankPost', {
+  callback = function()
+    local ev = vim.v.event
+    if ev.operator ~= 'y' then return end
+    local lines = vim.deepcopy(ev.regcontents)
+    if ev.regtype == 'V' then table.insert(lines, '') end  -- linewise: end with a newline
+    copy(lines)
+  end,
+})
+EOF
+
+" Ctrl+C copies the whole note, or the selection in visual mode.
+nnoremap <silent> <C-c> :%yank<CR>
+vnoremap <silent> <C-c> y
+
 " Toggle a Markdown checkbox on the current line with Ctrl+X.
 function! s:ToggleBox()
   let l = getline('.')

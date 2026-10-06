@@ -51,6 +51,13 @@ Requires `nvim` and `jq` on `PATH` (both are on Homebrew: `brew install neovim j
   - `q` saves and closes the pane.
   - `Ctrl+S` saves (normal and insert mode).
   - `Ctrl+X` toggles a `- [ ]` checkbox on the current line, or turns the line into one.
+  - `Ctrl+C` copies the whole note to the system clipboard. In visual mode it copies
+    the selection.
+- Every yank (`yy`, `yip`, a selection and `y`) also goes to the system clipboard.
+  The text is sent through the terminal with OSC 52, and Herdr forwards it to the
+  machine you sit at. A yank on a saved SSH machine reaches your local clipboard.
+  Deletes stay in Neovim's registers. `p` pastes the last yank or delete from the
+  pane; to paste text from another app, use the terminal's paste key (`Cmd+V`).
 - A new note starts with a heading made from the workspace and tab labels.
 
 ## Where the notes live
