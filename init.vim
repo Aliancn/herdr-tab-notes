@@ -13,10 +13,27 @@ set signcolumn=no
 set tabstop=2 shiftwidth=2 expandtab
 set scrolloff=3
 set mouse=a
-set spelllang=en_us
 set termguicolors
-colorscheme habamax
+
+" Match Herdr's light theme by default. Override with NOTES_BACKGROUND and
+" NOTES_COLORSCHEME in config.env.
+if exists('$TABNOTES_BACKGROUND') && ($TABNOTES_BACKGROUND ==# 'light' || $TABNOTES_BACKGROUND ==# 'dark')
+  execute 'set background=' . $TABNOTES_BACKGROUND
+else
+  set background=light
+endif
+if exists('$TABNOTES_COLORSCHEME') && !empty($TABNOTES_COLORSCHEME)
+  execute 'colorscheme ' . $TABNOTES_COLORSCHEME
+else
+  colorscheme default
+endif
+
 autocmd BufRead,BufNewFile *.md setlocal filetype=markdown conceallevel=0
+
+" Optional spell checking (NOTES_SPELL=1 in config.env).
+if exists('$TABNOTES_SPELL') && $TABNOTES_SPELL ==# '1'
+  set spell spelllang=en_us
+endif
 
 " Save on every change and when the pane loses focus; nothing is ever lost.
 autocmd TextChanged,TextChangedI,InsertLeave,FocusLost * silent! update
@@ -48,16 +65,19 @@ inoremap <silent> <C-s> <Esc>:update<CR>a
 " a saved SSH machine reaches the local clipboard too. Deletes stay in Neovim's
 " registers, and p pastes from those registers as usual.
 lua << EOF
-local copy = require('vim.ui.clipboard.osc52').copy('+')
-vim.api.nvim_create_autocmd('TextYankPost', {
-  callback = function()
-    local ev = vim.v.event
-    if ev.operator ~= 'y' then return end
-    local lines = vim.deepcopy(ev.regcontents)
-    if ev.regtype == 'V' then table.insert(lines, '') end  -- linewise: end with a newline
-    copy(lines)
-  end,
-})
+local ok, osc52 = pcall(require, 'vim.ui.clipboard.osc52')
+if ok then
+  local copy = osc52.copy('+')
+  vim.api.nvim_create_autocmd('TextYankPost', {
+    callback = function()
+      local ev = vim.v.event
+      if ev.operator ~= 'y' then return end
+      local lines = vim.deepcopy(ev.regcontents)
+      if ev.regtype == 'V' then table.insert(lines, '') end  -- linewise: end with a newline
+      copy(lines)
+    end,
+  })
+end
 EOF
 
 " Ctrl+C copies the whole note, or the selection in visual mode.

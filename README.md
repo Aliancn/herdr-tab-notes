@@ -16,10 +16,28 @@ tab are supposed to do next, so the intent survives a switch to another project.
 └──────────────────────────────────────┴────────────┘
 ```
 
+## Fork notes
+
+This repository is a maintained fork of
+[yang3kc/herdr-tab-notes](https://github.com/yang3kc/herdr-tab-notes)
+(MIT, Copyright (c) 2026 Kaicheng Yang).
+
+Changes in this fork:
+
+- Serialize rapid toggles with a lock, so double-pressing the key cannot open
+  two notes panes.
+- Sanitize tab ids before using them as file names.
+- Default to a light Neovim theme (`background=light`, `colorscheme default`)
+  so the pane matches light Herdr themes. Override with `NOTES_BACKGROUND` and
+  `NOTES_COLORSCHEME`.
+- Optional spell checking with `NOTES_SPELL=1`.
+- Dependency checks for `jq` / `nvim`, clearer errors, and a sample
+  `config.env.example`.
+
 ## Install
 
 ```bash
-herdr plugin install yang3kc/herdr-tab-notes
+herdr plugin install Aliancn/herdr-tab-notes
 # or, from a clone:
 herdr plugin link /path/to/herdr-tab-notes
 ```
@@ -63,8 +81,11 @@ Requires `nvim` and `jq` on `PATH` (both are on Homebrew: `brew install neovim j
 ## Where the notes live
 
 `~/.local/state/herdr/plugins/tabnotes/notes/<workspace>_<tab>.md`, one file per tab,
-named by Herdr's stable tab id (for example `w1M_t9.md`). Files are never deleted by
-the plugin; a note for a closed tab stays there until you remove it.
+named by Herdr's stable tab id (for example `w1M_t9.md`). Tab ids are reduced to
+letters, digits, `_` and `-` before they are used as file names. Files are never
+deleted by the plugin; a note for a closed tab stays there until you remove it.
+
+Set `NOTES_DIR` to keep the files somewhere else, for example inside a notes vault.
 
 ## Options
 
@@ -75,7 +96,13 @@ Create `~/.config/herdr/plugins/config/tabnotes/config.env` (the directory is pr
 NOTES_DIR="$HOME/notes/herdr"      # keep the files somewhere else, e.g. inside a vault
 NOTES_COLS=48                      # width of the notes pane in columns (default 40)
 NOTES_EDITOR="nvim"                # use your own editor command instead of the bundled config
+NOTES_BACKGROUND="light"           # light (default) or dark
+NOTES_COLORSCHEME="default"        # any installed Neovim colorscheme
+NOTES_SPELL=1                      # enable spell checking (default 0)
 ```
+
+The file is sourced by the plugin, so it is shell code; only put your own settings in
+it. A commented example is in `config.env.example`.
 
 ## Remote machines
 
@@ -84,7 +111,7 @@ copy plugins to SSH hosts. So `prefix+f` on a tab that lives on a saved SSH mach
 needs the plugin on that machine as well. On each remote:
 
 ```bash
-herdr plugin install yang3kc/herdr-tab-notes --yes   # --yes: the prompt needs a TTY otherwise
+herdr plugin install Aliancn/herdr-tab-notes --yes   # --yes: the prompt needs a TTY otherwise
 # add the same [[keys.command]] block to that machine's ~/.config/herdr/config.toml
 herdr server reload-config
 ```
@@ -98,7 +125,8 @@ install command again on each remote.
 - `toggle.sh` is a plugin action. Herdr passes the focused workspace, tab, and pane in
   `HERDR_PLUGIN_CONTEXT_JSON`. If `state/open/<tab>` names a pane that still exists, the
   action closes it; otherwise it calls `herdr plugin pane open` with `--placement split
-  --direction right --target-pane <focused pane>`.
+  --direction right --target-pane <focused pane>`. A small directory lock serializes
+  rapid toggles.
 - `pane.sh` is the pane entry point. It creates the note file if needed, writes its own
   pane id to `state/open/<tab>`, renames the pane to `notes`, shrinks the split to
   `NOTES_COLS` columns with `herdr pane resize`, and runs the editor. When the editor
@@ -106,4 +134,5 @@ install command again on each remote.
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE). Upstream copyright (c) 2026 Kaicheng Yang; fork
+modifications copyright (c) 2026 Aliancn.
