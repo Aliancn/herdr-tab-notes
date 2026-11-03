@@ -38,6 +38,9 @@ Changes in this fork:
   behavior. Yanking still copies through OSC 52.
 - Fix the markdown buffer's 2-space indent (the ftplugin otherwise resets it to
   4) and scope "open at the end" to `*.md` instead of every buffer.
+- Optional `NOTES_USER_CONFIG=1`: load your normal Neovim config and overlay
+  only the tabnotes behavior, so the pane keeps your theme and statusline
+  instead of the bundled minimal look.
 
 ## Install
 
@@ -67,14 +70,21 @@ Homebrew: `brew install neovim jq`).
 
 ## Use
 
-- `prefix+f` opens the note for the focused tab in a 40-column split on the right and
-  focuses it. `prefix+f` again closes it. The action is also in Herdr's plugin action
-  list as "Tab notes: toggle the notes pane for this tab".
-- The editor is Neovim with its own small config (`init.vim`, loaded with `--clean`,
-  so your personal Neovim setup is not touched). Every change is saved immediately.
+- `prefix+f` opens the note for the focused tab in a `NOTES_COLS`-column split
+  (default 40) on the right and focuses it. `prefix+f` again closes it. The action
+  is also in Herdr's plugin action list as "Tab notes: toggle the notes pane for
+  this tab".
+- The editor is Neovim. By default it uses a small bundled config (`init.vim`,
+  loaded with `--clean`, so your personal Neovim setup is not touched). Set
+  `NOTES_USER_CONFIG=1` to load your normal Neovim config instead and overlay
+  only the tabnotes behavior: the pane then keeps your theme, statusline and
+  options, while autosave, OSC 52 yanks, checkbox toggling and screen-line
+  motions still work. Every change is saved immediately in either mode.
   - `Ctrl+X` toggles a `- [ ]` checkbox on the current line, or turns the line into one.
-  - `q`, `Ctrl+S` and `Ctrl+C` keep Neovim defaults. Close the pane with `prefix+f`
-    or `:q`; `q` records macros again, and `Ctrl+C` cancels/interrupts as usual.
+  - In the bundled config, `q`, `Ctrl+S` and `Ctrl+C` keep Neovim defaults. Close
+    the pane with `prefix+f` or `:q`; `q` records macros again, and `Ctrl+C`
+    cancels/interrupts as usual. With `NOTES_USER_CONFIG=1`, your own mappings
+    apply instead (for example a `Ctrl+S` save mapping from your config).
 - Every yank (`yy`, `yip`, a selection and `y`) also goes to the system clipboard.
   The text is sent through the terminal with OSC 52, and Herdr forwards it to the
   machine you sit at. A yank on a saved SSH machine reaches your local clipboard.
@@ -114,10 +124,15 @@ Create `~/.config/herdr/plugins/config/tabnotes/config.env` (the directory is pr
 NOTES_DIR="$HOME/notes/herdr"      # keep the files somewhere else, e.g. inside a vault
 NOTES_COLS=48                      # width of the notes pane in columns (default 40)
 NOTES_EDITOR="nvim"                # use your own editor command instead of the bundled config
+NOTES_USER_CONFIG=1                # load your normal Neovim config + overlay tabnotes behavior
 NOTES_BACKGROUND="light"           # light (default) or dark
 NOTES_COLORSCHEME="default"        # any installed Neovim colorscheme
 NOTES_SPELL=1                      # enable spell checking (default 0)
 ```
+
+`NOTES_BACKGROUND` and `NOTES_COLORSCHEME` only apply to the bundled config; with
+`NOTES_USER_CONFIG=1` your own colorscheme wins. `NOTES_EDITOR` takes precedence
+over `NOTES_USER_CONFIG` when both are set.
 
 The file is sourced by the plugin, so it is shell code; only put your own settings in
 it. A commented example is in `config.env.example`.
@@ -148,7 +163,9 @@ install command again on each remote.
 - `pane.sh` is the pane entry point. It creates the note file if needed, writes its own
   pane id to `state/open/<tab>`, renames the pane to `notes`, shrinks the split to
   `NOTES_COLS` columns with `herdr pane resize`, and runs the editor. When the editor
-  exits the marker is removed and Herdr closes the pane.
+  exits the marker is removed and Herdr closes the pane. With `NOTES_USER_CONFIG=1`
+  it starts `nvim` normally and sources `init-user.vim`, which overlays the tabnotes
+  behavior on your config.
 
 ## License
 

@@ -82,5 +82,9 @@ else
     sleep 3
     exit 1
   fi
-  nvim --clean -u "$root/init.vim" "$file"
+  if [ "${NOTES_USER_CONFIG:-0}" = "1" ]; then
+    nvim -c "source $root/init-user.vim" "$file"
+  else
+    nvim --clean -u "$root/init.vim" "$file"
+  fi
 fi

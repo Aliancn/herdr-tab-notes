@@ -1,30 +1,37 @@
 " Minimal Neovim config for the tab-notes pane (loaded with --clean).
+" init-user.vim also sources this file, with g:tabnotes_user_config set, to
+" reuse the tabnotes behavior on top of a full Neovim config.
 set nocompatible
 filetype plugin on
 syntax on
 set encoding=utf-8
-set wrap linebreak breakindent
-set nonumber norelativenumber
-set noswapfile nobackup nowritebackup
 set autoread
-set laststatus=0 noshowmode showcmd
-set shortmess+=I
-set signcolumn=no
-set scrolloff=3
-set mouse=a
-set termguicolors
 
-" Match Herdr's light theme by default. Override with NOTES_BACKGROUND and
-" NOTES_COLORSCHEME in config.env.
-if exists('$TABNOTES_BACKGROUND') && ($TABNOTES_BACKGROUND ==# 'light' || $TABNOTES_BACKGROUND ==# 'dark')
-  execute 'set background=' . $TABNOTES_BACKGROUND
-else
-  set background=light
-endif
-if exists('$TABNOTES_COLORSCHEME') && !empty($TABNOTES_COLORSCHEME)
-  execute 'colorscheme ' . $TABNOTES_COLORSCHEME
-else
-  colorscheme default
+" Appearance: only for the bundled minimal config. In user-config mode keep
+" the user's own numbers, statusline, colorscheme and other UI options.
+if !exists('g:tabnotes_user_config')
+  set wrap linebreak breakindent
+  set nonumber norelativenumber
+  set noswapfile nobackup nowritebackup
+  set laststatus=0 noshowmode showcmd
+  set shortmess+=I
+  set signcolumn=no
+  set scrolloff=3
+  set mouse=a
+  set termguicolors
+
+  " Match Herdr's light theme by default. Override with NOTES_BACKGROUND and
+  " NOTES_COLORSCHEME in config.env.
+  if exists('$TABNOTES_BACKGROUND') && ($TABNOTES_BACKGROUND ==# 'light' || $TABNOTES_BACKGROUND ==# 'dark')
+    execute 'set background=' . $TABNOTES_BACKGROUND
+  else
+    set background=light
+  endif
+  if exists('$TABNOTES_COLORSCHEME') && !empty($TABNOTES_COLORSCHEME)
+    execute 'colorscheme ' . $TABNOTES_COLORSCHEME
+  else
+    colorscheme default
+  endif
 endif
 
 autocmd BufRead,BufNewFile *.md setlocal filetype=markdown conceallevel=0
