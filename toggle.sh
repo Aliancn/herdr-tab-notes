@@ -33,7 +33,10 @@ fi
 key=$(printf '%s' "$tab" | LC_ALL=C tr -c 'A-Za-z0-9_-' '_')
 [ -n "$key" ] || key="tab"
 open="$state/open/$key"
-mkdir -p "$state/open"
+if ! mkdir -p "$state/open"; then
+  herdr notification show "Tab notes: cannot create state directory" >/dev/null 2>&1
+  exit 1
+fi
 
 # Serialize rapid toggles. A pane only writes its marker after it starts, so
 # without this two quick presses can open two notes panes for the same tab.
@@ -52,9 +55,12 @@ trap 'rm -rf "$lock"' EXIT
 if [ -f "$open" ]; then
   np=$(cat "$open")
   if [ -n "$np" ] && herdr pane get "$np" >/dev/null 2>&1; then
-    herdr pane close "$np" >/dev/null || true
-    rm -f "$open"
-    exit 0
+    if herdr pane close "$np" >/dev/null 2>&1; then
+      rm -f "$open"
+      exit 0
+    fi
+    herdr notification show "Tab notes: failed to close the notes pane" >/dev/null 2>&1
+    exit 1
   fi
   rm -f "$open"   # stale marker from a pane that is already gone
 fi
@@ -66,10 +72,25 @@ case "$cols" in
 esac
 [ "$cols" -ge 20 ] || cols=20
 
-if ! herdr plugin pane open --plugin tabnotes --entrypoint notes --placement split \
+if ! resp=$(herdr plugin pane open --plugin tabnotes --entrypoint notes --placement split \
   --target-pane "$pane" --direction right --focus \
   --env "TABNOTES_TAB=$tab" --env "TABNOTES_WS_LABEL=$ws_label" --env "TABNOTES_TAB_LABEL=$tab_label" \
-  --env "TABNOTES_COLS=$cols" >/dev/null; then
+  --env "TABNOTES_COLS=$cols" 2>/dev/null); then
   herdr notification show "Tab notes: failed to open the notes pane" >/dev/null 2>&1
   exit 1
+fi
+
+# Record the new pane before releasing the lock. pane.sh writes the same id
+# once it starts; this closes the race where a second toggle arrives before
+# the pane has started and sees no marker.
+new_pane=$(jq -r '.result.plugin_pane.pane.pane_id // .plugin_pane.pane.pane_id // .result.pane.pane_id // .result.pane_id // empty' <<<"$resp" 2>/dev/null)
+if [ -n "$new_pane" ]; then
+  printf '%s\n' "$new_pane" > "$open"
+else
+  # Fallback: give pane.sh a moment to publish its own marker.
+  i=0
+  while [ "$i" -lt 20 ] && [ ! -s "$open" ]; do
+    sleep 0.05
+    i=$((i + 1))
+  done
 fi

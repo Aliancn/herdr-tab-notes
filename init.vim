@@ -10,7 +10,6 @@ set autoread
 set laststatus=0 noshowmode showcmd
 set shortmess+=I
 set signcolumn=no
-set tabstop=2 shiftwidth=2 expandtab
 set scrolloff=3
 set mouse=a
 set termguicolors
@@ -29,6 +28,10 @@ else
 endif
 
 autocmd BufRead,BufNewFile *.md setlocal filetype=markdown conceallevel=0
+
+" The markdown ftplugin sets its own buffer-local 4-space tabs after startup;
+" put the note buffer back to 2 spaces.
+autocmd FileType markdown setlocal tabstop=2 shiftwidth=2 expandtab
 
 " Optional spell checking (NOTES_SPELL=1 in config.env).
 if exists('$TABNOTES_SPELL') && $TABNOTES_SPELL ==# '1'
@@ -52,13 +55,9 @@ inoremap <Up> <C-o>gk
 nnoremap 0 g0
 nnoremap $ g$
 
-" Open at the end of the note.
-autocmd BufReadPost * silent! normal! G
-
-" q writes and closes the pane. Ctrl+S saves.
-nnoremap <silent> q :update<CR>:qa<CR>
-nnoremap <silent> <C-s> :update<CR>
-inoremap <silent> <C-s> <Esc>:update<CR>a
+" Open markdown notes at the end. Keep this scoped to *.md so :help and :e of
+" other files keep their normal cursor position.
+autocmd BufReadPost *.md silent! normal! G
 
 " Every yank also goes to the system clipboard. The text is sent through the
 " terminal (OSC 52) and Herdr forwards it to the machine you sit at, so a yank on
@@ -80,9 +79,11 @@ if ok then
 end
 EOF
 
-" Ctrl+C copies the whole note, or the selection in visual mode.
-nnoremap <silent> <C-c> :%yank<CR>
-vnoremap <silent> <C-c> y
+" q, Ctrl+S and Ctrl+C are intentionally left at Neovim defaults:
+" - close the pane with the Herdr toggle (prefix+f) or :q
+" - every change is already saved by the autocmd above
+" - y/yy/visual y still copy through OSC 52
+" Ctrl+X stays remapped to the Markdown checkbox toggle below.
 
 " Toggle a Markdown checkbox on the current line with Ctrl+X.
 function! s:ToggleBox()

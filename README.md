@@ -24,8 +24,8 @@ This repository is a maintained fork of
 
 Changes in this fork:
 
-- Serialize rapid toggles with a lock, so double-pressing the key cannot open
-  two notes panes.
+- Serialize rapid toggles with a lock, and record the new pane id before
+  releasing it, so double-pressing the key cannot open two notes panes.
 - Sanitize tab ids before using them as file names.
 - Default to a light Neovim theme (`background=light`, `colorscheme default`)
   so the pane matches light Herdr themes. Override with `NOTES_BACKGROUND` and
@@ -33,6 +33,11 @@ Changes in this fork:
 - Optional spell checking with `NOTES_SPELL=1`.
 - Dependency checks for `jq` / `nvim`, clearer errors, and a sample
   `config.env.example`.
+- Leave `q`, `Ctrl+S` and `Ctrl+C` at Neovim defaults: close the pane with the
+  Herdr toggle or `:q`, rely on autosave, and keep stock interrupt/cancel
+  behavior. Yanking still copies through OSC 52.
+- Fix the markdown buffer's 2-space indent (the ftplugin otherwise resets it to
+  4) and scope "open at the end" to `*.md` instead of every buffer.
 
 ## Install
 
@@ -57,7 +62,8 @@ description = "toggle tab notes"
 herdr server reload-config
 ```
 
-Requires `nvim` and `jq` on `PATH` (both are on Homebrew: `brew install neovim jq`).
+Requires `jq` on `PATH`; `nvim` is required unless you set `NOTES_EDITOR` (both are on
+Homebrew: `brew install neovim jq`).
 
 ## Use
 
@@ -66,17 +72,29 @@ Requires `nvim` and `jq` on `PATH` (both are on Homebrew: `brew install neovim j
   list as "Tab notes: toggle the notes pane for this tab".
 - The editor is Neovim with its own small config (`init.vim`, loaded with `--clean`,
   so your personal Neovim setup is not touched). Every change is saved immediately.
-  - `q` saves and closes the pane.
-  - `Ctrl+S` saves (normal and insert mode).
   - `Ctrl+X` toggles a `- [ ]` checkbox on the current line, or turns the line into one.
-  - `Ctrl+C` copies the whole note to the system clipboard. In visual mode it copies
-    the selection.
+  - `q`, `Ctrl+S` and `Ctrl+C` keep Neovim defaults. Close the pane with `prefix+f`
+    or `:q`; `q` records macros again, and `Ctrl+C` cancels/interrupts as usual.
 - Every yank (`yy`, `yip`, a selection and `y`) also goes to the system clipboard.
   The text is sent through the terminal with OSC 52, and Herdr forwards it to the
   machine you sit at. A yank on a saved SSH machine reaches your local clipboard.
   Deletes stay in Neovim's registers. `p` pastes the last yank or delete from the
   pane; to paste text from another app, use the terminal's paste key (`Cmd+V`).
 - A new note starts with a heading made from the workspace and tab labels.
+
+## Key mappings
+
+`init.vim` keeps stock Neovim behavior except for:
+
+| Mode | Key | Action |
+| --- | --- | --- |
+| Normal | `j` / `k`, `Down` / `Up` | move by screen line |
+| Normal | `0` / `$` | screen line start / end |
+| Normal / Insert | `Ctrl+X` | toggle a Markdown checkbox |
+| Visual | `j` / `k`, `Down` / `Up` | move by screen line |
+| Insert | `Down` / `Up` | move by screen line |
+
+`q`, `Ctrl+S`, and `Ctrl+C` are not remapped.
 
 ## Where the notes live
 

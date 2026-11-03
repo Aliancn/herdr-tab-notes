@@ -13,6 +13,10 @@ tab="${TABNOTES_TAB:-${HERDR_TAB_ID:-}}"
 key=$(printf '%s' "$tab" | LC_ALL=C tr -c 'A-Za-z0-9_-' '_')
 [ -n "$key" ] || key="tab"
 notes_dir="${NOTES_DIR:-$state/notes}"
+case "$notes_dir" in
+  "~") notes_dir="$HOME" ;;
+  "~/"*) notes_dir="$HOME/${notes_dir:2}" ;;
+esac
 file="$notes_dir/$key.md"
 if ! mkdir -p "$notes_dir" "$state/open"; then
   echo "tabnotes: cannot create $notes_dir" >&2
